@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ocorrências SP | Global Solution</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#edf3f7;color:#142b3d;font:16px system-ui,sans-serif}main{max-width:740px;margin:40px auto;padding:24px}header{background:#102b41;color:white;padding:30px;border-radius:18px}small{color:#7de5cb;font-weight:700;letter-spacing:.14em}h1{margin:.4em 0}form,output{display:block;background:white;margin-top:18px;padding:24px;border-radius:16px}fieldset{border:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:16px}label{display:grid;gap:6px;font-weight:650}select,button{font:inherit;padding:11px;border-radius:8px;min-width:0}select{width:100%;border:1px solid #a4b9c8;background:white}button{margin-top:20px;border:0;color:white;background:#075b51;font-weight:700;cursor:pointer}output[hidden]{display:none}progress{display:block;width:100%;accent-color:#08796b}footer{margin-top:18px;font-size:.9rem}@media(max-width:540px){fieldset{grid-template-columns:1fr}main{margin:0}}
+</style>
+<main>
+<header><small>GLOBAL SOLUTION · APRENDIZADO PROFUNDO</small><h1>Classificador de ocorrências</h1><p>Celulares subtraídos na cidade de São Paulo em 2024</p></header>
+<p id="status" role="status"></p>
+<form id="form" hidden style="display:none"><fieldset id="fields" aria-label="Características da ocorrência"></fieldset><button>Classificar ocorrência</button></form>
+<output id="result" aria-live="polite" hidden></output>
+<footer>As probabilidades descrevem o tipo estimado de uma ocorrência informada. O modelo não estima o risco de um crime acontecer.</footer>
+</main>
+<script src="modelo.js"></script>
+<script>
+const model = window.MODELO;
+const form = document.querySelector('#form');
+const fields = document.querySelector('#fields');
+const result = document.querySelector('#result');
+const status = document.querySelector('#status');
+if (!model) {
+  status.textContent = 'Modelo ainda indisponível. Gere modelo.js seguindo as etapas do README.';
+} else {
+  if (model.demo) status.textContent = 'Demonstração técnica com dados sintéticos.';
+  form.hidden = false;
+  form.style.display = '';
+  model.features.forEach((name, i) => {
+    const label = document.createElement('label');
+    label.textContent = name;
+    const select = document.createElement('select');
+    select.name = String(i);
+    Object.keys(model.mappings[i]).sort((a,b) => a.localeCompare(b,'pt-BR'))
+      .forEach(value => select.add(new Option(value, value)));
+    label.append(select);
+    fields.append(label);
+  });
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    const values = new FormData(form);
+    let layer = Array(model.size).fill(0);
+    model.mappings.forEach((mapping, i) => { layer[mapping[values.get(String(i))]] = 1; });
+    model.weights.forEach((weights, k) => {
+      layer = model.biases[k].map((bias, j) => {
+        const z = layer.reduce((sum, value, i) => sum + value * weights[i][j], bias);
+        return k === model.weights.length - 1 ? 1 / (1 + Math.exp(-z)) : Math.max(0, z);
+      });
+    });
+    const p = layer[0];
+    const heading = document.createElement('h2');
+    heading.textContent = 'Classe estimada · ' + model.classes[p > .5 ? 1 : 0];
+    result.replaceChildren(heading);
+    [1-p,p].forEach((probability,i) => {
+      const row = document.createElement('p');
+      row.textContent = model.classes[i] + ' · ' + (100*probability).toLocaleString('pt-BR',{maximumFractionDigits:1}) + '%';
+      const bar = document.createElement('progress');
+      bar.max = 1;
+      bar.value = probability;
+      bar.setAttribute('aria-label', model.classes[i]);
+      row.append(bar);
+      result.append(row);
+    });
+    result.hidden = false;
+  });
+}
+</script>
