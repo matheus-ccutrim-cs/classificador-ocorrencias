@@ -1,16 +1,16 @@
 # Classificador de ocorrências de furto e roubo de celular
 
-**Global Solution · Aprendizado Profundo · FIAP**  
-**Autor:** Matheus Costa Cutrim · Trabalho individual
+**Global Solution · Aprendizado Profundo com Redes Neurais Convolucionais· FIAP**  
+**Autor:** Matheus Costa Cutrim RM - 568087
 
 O projeto compara três arquiteturas de redes neurais do tipo *Multilayer Perceptron* (MLP) para classificar ocorrências de celulares subtraídos no município de São Paulo em 2024. A rede selecionada usa bairro, período do dia, dia da semana e tipo de local para estimar se a ocorrência informada é compatível com **furto** ou **roubo**.
 
 A arquitetura selecionada atingiu **83,29% de acurácia** e **0,8308 de F1 macro** no conjunto de teste.
 
 **Aplicação online:** <!-- Substitua o texto abaixo pelo link confirmado após a publicação. -->
-*A inserir após a publicação no GitHub Pages.*
+*https://matheus-ccutrim-cs.github.io/classificador-ocorrencias/*
 
-[Notebook do modelo](GS_MLP_SP.ipynb) · [Relatório técnico](Relatorio_GS_10_slides.pdf) · [Resultados completos](docs/resultados.json)
+[Notebook do modelo](GS_MLP.ipynb) · [Relatório técnico](Relatorio_GS_10_slides.pdf) · [Resultados completos](docs/resultados.json)
 
 ## Dados e preparação
 
@@ -116,14 +116,6 @@ Abra [http://127.0.0.1:8000/](http://127.0.0.1:8000/), selecione os quatro atrib
    ```powershell
    .\.venv\Scripts\python.exe -m jupyterlab GS_MLP_SP.ipynb
    ```
-
-### Reproduzir o relatório técnico
-
-Com o treinamento concluído e a captura da aplicação salva como `interface.png` na raiz, execute o comando abaixo substituindo `SEU_RM` pelo RM do autor.
-
-```powershell
-.\.venv\Scripts\python.exe relatorio.py --saida Relatorio_GS_10_slides.pdf --captura interface.png --integrantes "Matheus Costa Cutrim, RM SEU_RM"
-```
 
 ## Limitações e uso de IA generativa
 
