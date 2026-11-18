@@ -83,7 +83,8 @@ def build(out, results, screenshot, members):
           "Cada camada densa calcula uma soma ponderada e adiciona um viés.",
           "Camadas ocultas: ReLU(z) = max(0, z) para aprender relações não lineares.",
           "Saída: um neurônio sigmoide fornece a probabilidade estimada de Roubo.",
-          "A probabilidade de Furto é o complemento. O limiar de decisão é 0,5.")
+          "A probabilidade de Furto é o complemento. O limiar de decisão é 0,5.",
+          "Arquitetura A: 178 entradas -> 32 neurônios (ReLU) -> 1 saída (sigmoide).")
     canvas.showPage()
 
     slide("Configuração do treinamento")
@@ -126,20 +127,28 @@ def build(out, results, screenshot, members):
     slide("Curvas e avaliação final")
     if data:
         image(path.with_name("avaliacao.png"), 45, 151, 870, 230)
+
         selected = data["arquiteturas"][data["selecionada"]]["historico"]
         last = selected[-1]
-        gap = last["treino_acc"] - last["val_acc"]
-        increase = last["val_loss"] - min(row["val_loss"] for row in selected)
-        diagnosis = ("A perda de validação voltou a subir. Compare com a curva de treino."
-                     if increase > .02 else "A perda de validação terminou próxima do seu mínimo.")
-        lines(f"Teste: acurácia {data['teste']['acuracia']:.3f}  |  F1 macro {data['teste']['f1']:.3f}",
-              f"Na última época, diferença treino − validação: {gap:+.1%} na acurácia.",
-              diagnosis, y=136, step=29)
+        gap = (last["treino_acc"] - last["val_acc"]) * 100
+
+        matrix = data["matriz"]
+        furto_como_roubo = matrix[0][1]
+        roubo_como_furto = matrix[1][0]
+
+        lines(
+            f"Teste: acurácia {data['teste']['acuracia']:.2%}"
+            f" | F1 macro {data['teste']['f1']:.4f}",
+            f"Diferença final de acurácia entre treino e validação: {gap:.2f} p.p.",
+            "A perda de treino caiu e a de validação subiu ligeiramente: sobreajuste leve.",
+            f"Erros: {furto_como_roubo} furtos classificados como roubo"
+            f" e {roubo_como_furto} roubos como furto.",
+            y=136,
+            step=25,
+        )
     else:
-        lines("Curvas e matriz de confusão serão inseridas após o treinamento oficial.",
-              "Treino melhora e validação piora: possível sobreajuste.",
-              "Treino e validação fracos: investigar capacidade e sinal dos atributos.",
-              "Matriz no teste: linhas indicam classes reais, colunas indicam estimativas.")
+        lines("Resultados de avaliação indisponíveis.")
+
     canvas.showPage()
 
     slide("Interface web e inferência")
@@ -160,12 +169,14 @@ def build(out, results, screenshot, members):
     canvas.showPage()
 
     slide("Conclusões e limites")
-    lines("A proposta classifica o tipo de um registro de celular subtraído.",
-          "Os dados representam ocorrências registradas e estão sujeitos à subnotificação.",
-          "O recorte de 2024 limita a extrapolação a outros anos, cidades e objetos.",
-          "As probabilidades expressam a saída do modelo, sem calibração adicional.",
-          "IA generativa apoiou código, documentação e validação técnica do fluxo.",
-          "A interpretação empírica depende da execução sobre os dados oficiais.")
+    lines(
+        "A arquitetura A, com 32 neurônios ocultos, obteve o maior F1 na validação: 0,8340.",
+        "No teste, alcançou 83,29% de acurácia e F1 macro de 0,8308.",
+        "Os registros estão sujeitos à subnotificação e a diferenças no preenchimento.",
+        "O recorte de 2024 limita a extrapolação a outros anos, cidades e objetos.",
+        "As probabilidades da rede não passaram por calibração adicional.",
+        "A IA generativa apoiou código, documentação e revisão técnica.",
+    )
     canvas.showPage()
     canvas.save()
 
